@@ -253,3 +253,32 @@ textarea.input { min-height: 120px; line-height: 1.5; resize: vertical; }
 .prose table { margin-bottom: var(--space-lg); }
 
 @media print { .topbar, .footer, .savebar { display: none; } }
+
+/* NOC results */
+.noc-sum { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs) var(--space-md); cursor: pointer; list-style: none; }
+.noc-sum::-webkit-details-marker { display: none; }
+.noc-sum:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; border-radius: var(--radius-input); }
+.noc-title { font-weight: 600; font-size: var(--text-lg); letter-spacing: -0.01em; flex: 1 1 16rem; min-width: 0; }
+
+/* Pathways */
+.sect-h { font-size: var(--text-2xl); letter-spacing: -0.02em; max-width: none; margin-bottom: var(--space-xs); }
+.sect-p { margin-bottom: var(--space-lg); }
+.dash__col > section + section { margin-top: var(--space-2xl); }
+.recs { display: grid; gap: var(--space-md); }
+.rec__sum { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-xs) var(--space-md); cursor: pointer; list-style: none; }
+.rec__sum::-webkit-details-marker { display: none; }
+.rec__sum:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; border-radius: var(--radius-input); }
+.rec__name { font-weight: 600; font-size: var(--text-lg); letter-spacing: -0.01em; flex: 1 1 18rem; min-width: 0; }
+.rec__body { display: grid; gap: var(--space-md); margin-top: var(--space-md); }
+.rec__body ul { margin: 0; padding-left: var(--space-lg); display: grid; gap: var(--space-2xs); }
+.rec__h { font-size: var(--text-md); letter-spacing: 0; margin-bottom: var(--space-2xs); max-width: none; }
+.plan { counter-reset: step; }
+.db td:first-child { min-width: 16rem; }
+@media (max-width: 40rem) {
+  .compare:has(.db) { overflow-x: visible; }
+  table.db { min-width: 0; }
+  .db thead { display: none; }
+  .db tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 var(--space-md); border-bottom: var(--rule-hair) solid var(--color-rule); padding-block: var(--space-xs); }
+  .db td { border-bottom: 0; padding-block: var(--space-3xs); }
+  .db td:first-child { grid-column: 1 / -1; min-width: 0; }
+}

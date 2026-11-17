@@ -39,8 +39,8 @@ const parse = (s?: string) => (s ? new Date(s + "T00:00:00Z") : null);
  * at most 30 hours across all overlapping jobs so concurrent jobs are never
  * double counted.
  */
-export function creditedHours(jobs: Job[], on: Date): number {
-  const windowStart = new Date(on.getTime() - 3652 * DAY);
+export function creditedHours(jobs: Job[], on: Date, windowYears = 10): number {
+  const windowStart = new Date(on.getTime() - Math.round(windowYears * 365.25) * DAY);
   const weeks = Math.ceil((on.getTime() - windowStart.getTime()) / (7 * DAY));
   const perWeek = new Float64Array(weeks);
   for (const job of jobs) {
@@ -59,7 +59,7 @@ export function creditedHours(jobs: Job[], on: Date): number {
   return total;
 }
 
-const isSkilled = (j: Job) => j.teer === "0" || j.teer === "1" || j.teer === "2" || j.teer === "3";
+export const isSkilled = (j: Job) => j.teer === "0" || j.teer === "1" || j.teer === "2" || j.teer === "3";
 
 function countsInCanada(j: Job) {
   return j.country === "canada" && isSkilled(j) && j.paid !== false && !j.selfEmployed && !j.whileFullTimeStudent;

@@ -146,6 +146,11 @@ export const profileSchema = z.object({
   // Work
   jobs: z.array(jobSchema).max(20).optional(),
   jobOfferHighWage: z.enum(HIGH_WAGE).optional(),
+  jobOfferValid: yesNo,
+  jobOfferTeer: z.enum(TEERS).optional(),
+  jobOfferProvince: text(60),
+  settlementFunds: z.coerce.number().min(0).max(100_000_000).optional(),
+  relativeInCanada: yesNo,
 
   // Where you'd live
   province: text(60),

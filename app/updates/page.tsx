@@ -40,6 +40,16 @@ export default function UpdatesPage() {
               </tr>
             ))}
             <tr>
+              <td>In effect</td>
+              <td>Ontario: the Ontario Workforce Priority stream launched and all other OINP streams closed. <a href="https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp" target="_blank" rel="noopener noreferrer">Source</a></td>
+              <td className="fig">2026-11-17</td>
+            </tr>
+            <tr>
+              <td className="fig">2027-01-01</td>
+              <td>The Rural Community Immigration Pilot closes and the permanent Rural Community Immigration Program opens (announced). <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/rural-franco-pilots/rural-immigration-program.html" target="_blank" rel="noopener noreferrer">Source</a></td>
+              <td className="fig">2026-11-17</td>
+            </tr>
+            <tr>
               <td>Page dated <span className="fig">2026-10-16</span></td>
               <td>Language test equivalency charts used to convert scores to CLB and NCLC. <a href={SRC.languageTests} target="_blank" rel="noopener noreferrer">Source</a></td>
               <td className="fig">2026-11-17</td>

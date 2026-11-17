@@ -170,15 +170,30 @@ Principles:
 
 | Phase | Scope | Status |
 | --- | --- | --- |
-| 1 | Architecture, schema, auth, dashboard, dynamic questionnaire, CRS calculator with versioned rules, scenarios, history, legal pages | **built in this branch** |
-| 2 | Express Entry eligibility (CEC, FSW 67-point grid, FST), category-based selection checks, NOC 2021 database and duty matching, provincial stream database with statuses, recommendation ranking and action plan | next |
+| 1 | Architecture, schema, auth, dashboard, dynamic questionnaire, CRS calculator with versioned rules, scenarios, history, legal pages | **built** |
+| 2 | Express Entry eligibility (CEC, FSW 67-point grid, FST), category-based selection checks, NOC 2021 database and duty matching, provincial stream database with statuses, recommendation ranking and action plan | **built** |
 | 3 | RCIP, FCIP, AIP and other community pathways; work permit and temporary status assessment (PGWP length, BOWP, SOWP, restoration windows); document upload, extraction and checklists; refusal analysis with professional-review flags | planned |
 | 4 | Official source monitoring and review queue, update centre, email notifications, AI assistant for explanations | planned |
 | 5 | Penetration test, rule validation against IRCC's own tool, load testing, production deployment in a Canadian region | planned |
 
+### Phase 2: what was built and how it was verified
+
+- `lib/engine/eligibility/`: CEC, FSW (minimums and the 67-point grid), FST, and the ten current category-based selection categories. Rules and occupation lists read from canada.ca on 2026-11-17 (program pages dated 2026-10-16 and 2026-11-03).
+- `lib/data/noc-2021.json`: all 516 NOC 2021 V1.0 unit groups with lead statements, main duties, examples, requirements and exclusions, built by `scripts/build-noc.py` from Statistics Canada's official CSV files.
+- `lib/engine/noc/match.ts`: BM25 ranking of the person's own duty description against each unit group's lead statement and main duties. Job titles are never used for ranking, only to warn when a title points elsewhere. Every official duty is marked matched, partly matched or not mentioned. Descriptions under 25 words are refused.
+- `lib/data/programs.ts`: provincial, territorial, community and other pathways, each with the status its official page states, a short quote, the URL and the check date.
+- `lib/engine/recommend.ts`: deterministic ranking into potential, worth checking and not right now, using requirement verdicts, program status, where the person lives or would live, job offer, permit expiry and categories; plus a dated action plan.
+
+### Known gaps in program data (2026-11-17)
+
+- **Not verified:** Manitoba, Nova Scotia, Prince Edward Island and Yukon block automated reading or were unavailable. They are listed as "Not verified" with their official URL.
+- **Ontario:** only the OINP landing page could be read: the Ontario Workforce Priority stream has launched and all other streams are closed. The new stream's requirements are not recorded.
+- **Quebec:** program names only; statuses not stated on the listing page.
+- **Status not stated:** many provincial stream pages give no intake status. They are labelled that way rather than assumed open.
+- Provincial streams are listed for people to check; their detailed eligibility is not assessed yet.
+
 ### Known limitations in Phase 1
 
 - **High-wage occupations.** Since November 3, 2026, CRS awards points for high-wage Canadian experience and high-wage job offers based on IRCC's list of NOC codes and wage levels. Phase 1 asks the user which level IRCC's list gives their occupation and links the list; it does not look the code up itself. Phase 2 imports the list with its effective date.
-- **Program eligibility** (CEC, FSW, FST) is not checked yet. The calculator states this on every result.
 - **Validation cases** are built by hand from the official tables. They should be cross-checked against IRCC's own CRS tool before launch.
 - **Email** is logged to the server console in development until a mail provider is configured.

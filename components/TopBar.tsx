@@ -11,6 +11,7 @@ export async function TopBar() {
         { href: "/assessment", label: "Assessment" },
         { href: "/crs", label: "CRS calculator" },
         { href: "/pathways", label: "PR pathways" },
+        { href: "/noc", label: "NOC finder" },
         { href: "/history", label: "History" },
         { href: "/account", label: "Account" },
       ]

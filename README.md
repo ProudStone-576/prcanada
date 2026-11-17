@@ -2,7 +2,7 @@
 
 Your Canadian Immigration Journey, Simplified.
 
-A Canadian immigration decision-support platform for international students, graduates and temporary residents. **Phase 1** is built: accounts, a dynamic assessment, a dashboard, and a CRS calculator worked from IRCC's official tables (including the November 3, 2026 changes) with scenarios and a versioned history.
+A Canadian immigration decision-support platform for international students, graduates and temporary residents. **Phases 1 and 2** are built: accounts, a dynamic assessment, a dashboard, a CRS calculator worked from IRCC's official tables (including the November 3, 2026 changes), Express Entry eligibility checks (CEC, FSW, FST and current categories), a NOC finder that compares your duties with the official NOC 2021 descriptions, a database of provincial and community programs with their official statuses, and ranked pathway recommendations with an action plan.
 
 PRPath Canada gives information, not legal advice. It is not a licensed consultant or lawyer and never submits applications.
 
@@ -38,5 +38,7 @@ Password reset emails are written to the server log until a mail provider is con
 ## Known limitations
 
 - **High-wage occupations** (new CRS points since Nov 3, 2026): the user picks their occupation's level from IRCC's list; the list itself is not imported yet.
-- **Program eligibility** (CEC, FSW, FST), NOC matching, provincial streams, document and refusal analysis, and update monitoring are later phases. Their pages link official sources instead of guessing.
+- **Provincial data gaps:** Manitoba, Nova Scotia, PEI and Yukon couldn't be read automatically and are marked "Not verified"; Ontario's new stream requirements aren't recorded. See `docs/ARCHITECTURE.md`.
+- Provincial streams are listed for people to check, not assessed in detail. Document and refusal analysis, and update monitoring, are later phases.
+- Rebuild the NOC data with `python3 scripts/build-noc.py <structure.csv> <elements.csv> <date>` from Statistics Canada's files.
 - Test cases are hand-worked from the official tables; cross-check against IRCC's own CRS tool before launch.

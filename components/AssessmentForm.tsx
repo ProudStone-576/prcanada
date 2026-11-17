@@ -24,6 +24,9 @@ import {
 import { SRC } from "@/lib/sources";
 import { Check, Choice, NumberField, SelectField, TextArea, TextField, YES_NO } from "./form/fields";
 import { Term } from "./Term";
+import { suggestNocAction } from "@/app/actions/noc";
+import type { NocMatch } from "@/lib/engine/noc/match";
+import { NocResults } from "./NocResults";
 
 const EDU_OPTIONS = EDUCATION_LEVELS.map((e) => [e, EDUCATION_LABELS[e]] as [typeof e, string]);
 const WAGE_OPTIONS = HIGH_WAGE.map((w) => [w, HIGH_WAGE_LABELS[w]] as [typeof w, string]);
@@ -130,6 +133,13 @@ export function AssessmentForm({ initial, step, completed, today }: { initial: P
                   onChange={(v) => set("siblingInCanada", v)}
                   options={YES_NO}
                   hint="Includes half and step siblings related by blood, marriage, common-law partnership or adoption. Worth 15 points."
+                />
+                <Choice
+                  label="Do you have a parent, grandparent, child, grandchild, aunt, uncle, niece or nephew in Canada who is 18 or older and a citizen or permanent resident?"
+                  value={p.relativeInCanada}
+                  onChange={(v) => set("relativeInCanada", v)}
+                  options={YES_NO}
+                  hint="Counts toward Federal Skilled Worker adaptability points."
                 />
                 <TextArea label="Other relatives in Canada (optional)" value={p.relativesInCanada} onChange={(v) => set("relativesInCanada", v)} hint="Some provincial streams consider close relatives. We'll use this in a later version." />
               </section>
@@ -315,6 +325,23 @@ export function AssessmentForm({ initial, step, completed, today }: { initial: P
               </section>
               <section>
                 <h2>Job offer</h2>
+                <div className="form">
+                  <Choice
+                    label="Do you have a full-time job offer in Canada for at least one year, not seasonal, in writing?"
+                    value={p.jobOfferValid}
+                    onChange={(v) => set("jobOfferValid", v)}
+                    options={YES_NO}
+                  />
+                  {p.jobOfferValid === "yes" && (
+                    <div className="grid-2">
+                      <SelectField label={<><Term k="teer">TEER</Term> of the job offered</>} value={p.jobOfferTeer} onChange={(v) => set("jobOfferTeer", v)} options={[["0", "TEER 0"], ["1", "TEER 1"], ["2", "TEER 2"], ["3", "TEER 3"], ["4", "TEER 4"], ["5", "TEER 5"], ["unknown", "I don't know"]]} />
+                      <SelectField label="Province or territory of the job" value={p.jobOfferProvince as never} onChange={(v) => set("jobOfferProvince", v)} options={PROVINCES.map((x) => [x, x] as [string, string])} />
+                    </div>
+                  )}
+                </div>
+              </section>
+              <section>
+                <h2>High-wage job offer</h2>
                 <SelectField
                   label={<>Do you have a job offer in a <Term k="high_wage">high-wage occupation</Term>?</>}
                   value={p.jobOfferHighWage}
@@ -356,6 +383,13 @@ export function AssessmentForm({ initial, step, completed, today }: { initial: P
                   </fieldset>
                   <Choice label="Would you live and work in a smaller or rural community?" value={p.ruralOk} onChange={(v) => set("ruralOk", v)} options={YES_NO} hint="Some community pilots only accept people who commit to living there." />
                   <Choice label="Would you learn French?" value={p.learnFrench} onChange={(v) => set("learnFrench", v)} options={YES_NO} hint="NCLC 7 in French can add up to 50 points and opens French-language category rounds." />
+                  <NumberField
+                    label="Money you could show for settling in Canada, in Canadian dollars (optional)"
+                    min={0}
+                    value={p.settlementFunds}
+                    onChange={(v) => set("settlementFunds", v)}
+                    hint="Savings you can access, not borrowed money or home equity. Some programs ask for proof unless you work in Canada with a job offer."
+                  />
                   <Choice label={<>Do you already have a provincial or territorial nomination (<Term k="pnp">PNP</Term>) through an Express Entry stream?</>} value={p.provincialNomination} onChange={(v) => set("provincialNomination", v)} options={YES_NO} />
                 </div>
               </section>
@@ -508,8 +542,32 @@ function JobEditor({ job, index, onChange, onRemove, errors, wasStudent }: {
         label="Your main duties"
         value={job.duties}
         onChange={(v) => up("duties", v)}
-        hint="Write what you actually did, in your own words. We'll use this to suggest NOC codes in the next release."
+        hint="Write what you actually did, in your own words. Your NOC code depends on these duties, not your title."
       />
+      <DutyMatcher job={job} onPick={(code, teer) => onChange({ ...job, nocCode: code, teer: String(teer) as Job["teer"] })} />
+    </div>
+  );
+}
+
+function DutyMatcher({ job, onPick }: { job: Job; onPick: (code: string, teer: number) => void }) {
+  const [res, setRes] = useState<NocMatch | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <div className="form" style={{ gap: "var(--space-sm)" }}>
+      <div className="actions">
+        <button type="button" className="btn btn--card btn--sm" disabled={pending} aria-busy={pending} onClick={() => start(async () => setRes(await suggestNocAction(job.duties ?? "", job.title ?? "", 3)))}>
+          {pending ? "Comparing" : "Suggest NOC codes from these duties"}
+        </button>
+      </div>
+      {res && (
+        <NocResults
+          result={res}
+          onPick={(code, teer) => {
+            onPick(code, teer);
+            setRes(null);
+          }}
+        />
+      )}
     </div>
   );
 }

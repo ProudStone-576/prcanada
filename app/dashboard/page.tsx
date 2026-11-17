@@ -10,6 +10,8 @@ import { SRC } from "@/lib/sources";
 import { Term } from "@/components/Term";
 import { AddDeadline } from "@/components/AddDeadline";
 import { dismissDeadlineAction } from "@/app/actions/deadlines";
+import { recommend } from "@/lib/engine/recommend";
+import { STATUS_LABEL } from "@/lib/data/programs";
 
 export const metadata = { title: "Dashboard" };
 
@@ -50,6 +52,7 @@ export default async function Dashboard() {
   const remainingSteps = STEPS.filter((s) => !completedSteps.includes(s.key));
   const expiry = profile.permitExpiryDate ? daysUntil(profile.permitExpiryDate, now) : null;
 
+  const report = completedSteps.length === 0 ? null : recommend(profile, now);
   const nextSteps: Array<{ text: string; href: string; external?: boolean }> = [];
   if (flags.length) nextSteps.push({ text: "Talk to a licensed consultant or lawyer about your situation before you apply for anything.", href: SRC.cicc, external: true });
   if (remainingSteps.length) nextSteps.push({ text: `Finish your assessment: ${remainingSteps.map((s) => s.label.toLowerCase()).join(", ")}.`, href: `/assessment?step=${remainingSteps[0].key}` });
@@ -57,8 +60,13 @@ export default async function Dashboard() {
   if (profile.educationEarnedIn === "foreign" && profile.ecaStatus !== "completed") nextSteps.push({ text: "Order an Educational Credential Assessment so your foreign education earns points.", href: SRC.eca, external: true });
   if (expiry !== null && expiry <= 180 && expiry > 0) nextSteps.push({ text: `Your permit expires ${inDays(expiry)}. Decide now how you'll keep your status; applying before it expires matters.`, href: SRC.workCanada, external: true });
   if (result) nextSteps.push({ text: "Try what-if scenarios to see which change would raise your score most.", href: "/crs" });
+  for (const m of report?.plan ?? []) {
+    if (nextSteps.length >= 5) break;
+    if (!nextSteps.some((n) => n.text.startsWith(m.title))) nextSteps.push({ text: `${m.title}${m.due ? ` (by ${m.due})` : ""}.`, href: m.href ?? "/pathways", external: Boolean(m.href && !m.href.startsWith("/")) });
+  }
 
   const empty = completedSteps.length === 0;
+  const topPaths = report ? [...report.potential, ...report.needsInfo].slice(0, 4) : [];
 
   return (
     <div className="container app-main">
@@ -148,10 +156,26 @@ export default async function Dashboard() {
 
           <section className="stock panel" aria-labelledby="path-h">
             <h2 id="path-h">Potential PR pathways</h2>
-            <p className="small" style={{ marginBottom: "var(--space-md)" }}>
-              Program-by-program matching (Express Entry programs, provincial streams, community pilots) is being built next. We won&apos;t list a pathway as a fit until we can check its current rules and status against official sources.
-            </p>
-            <Link href="/pathways" className="small">See the programs we&apos;ll assess and their official pages</Link>
+            {report ? (
+              <>
+                <ul className="list">
+                  {topPaths.map((r) => (
+                    <li key={r.id}>
+                      <div className="row">
+                        <strong style={{ fontWeight: 500 }}>{r.name}</strong>
+                        <span className="tag">{r.bucket === "potential" ? "Requirements met" : STATUS_LABEL[r.status]}</span>
+                      </div>
+                      <span className="small muted">{r.reasons[0] ?? r.gaps[0] ?? r.statusNote}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="small" style={{ marginTop: "var(--space-sm)" }}>
+                  {report.potential.length} potential, {report.needsInfo.length} worth checking. <Link href="/pathways">See every pathway and your action plan</Link>
+                </p>
+              </>
+            ) : (
+              <p className="small">Complete the assessment to see matched pathways. <Link href="/pathways">Browse all programs</Link></p>
+            )}
           </section>
         </div>
 

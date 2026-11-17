@@ -103,7 +103,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
             </Link>
             <Link href="/pathways" className="stock door door--wide">
               <h3>Explore PR pathways</h3>
-              <p>Official program pages. Matching comes next.</p>
+              <p>Matched to you, with official statuses.</p>
             </Link>
             <Link href="/work-permits" className="stock door door--third">
               <h3>Check work permit options</h3>
