@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  passwordHash   String
+  name           String?
+  consentAt      DateTime
+  consentVersion String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  sessions     Session[]
+  resetTokens  PasswordResetToken[]
+  profile      Profile?
+  assessments  Assessment[]
+  scenarios    Scenario[]
+  deadlines    Deadline[]
+  auditLogs    AuditLog[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  ip        String?
+  userAgent String?
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+}
+
+/// Questionnaire answers, encrypted with AES-256-GCM before storage.
+model Profile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ciphertext     String
+  completedSteps String[]
+  schemaVersion  Int      @default(1)
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+}
+
+/// A frozen run of the rule engine. Never updated after creation.
+model Assessment {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind           String   @default("crs")
+  ruleSetVersion String
+  inputSnapshot  String
+  result         Json
+  total          Int
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Scenario {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  ruleSetVersion String
+  input          String
+  total          Int
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Deadline {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        String
+  title       String
+  dueDate     DateTime
+  source      String    @default("user")
+  dismissedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, dueDate])
+}
+
+/// Registry of rule versions so any assessment can be traced to its rules.
+model RuleSet {
+  id            String    @id @default(cuid())
+  key           String
+  version       String
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  sourceUrl     String
+  verifiedAt    DateTime
+  notes         String?
+
+  @@unique([key, version])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

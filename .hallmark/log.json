@@ -1,0 +1,30 @@
+[
+ {
+  "shape": "Workbench",
+  "theme": "coral",
+  "axes": "light/grotesk-sans/warm",
+  "hero": "Desk",
+  "nav": "edge-aligned wordmark, links, one action",
+  "footer": "official sources ledger over legal line",
+  "imagery": "product built as stationery",
+  "photos": 0,
+  "entry": "desk",
+  "fingerprint": "desk-sheet/doors-index/board-ledger/promise-list",
+  "sections": [
+   "hero",
+   "doors",
+   "board",
+   "promise",
+   "footer"
+  ],
+  "signature": "CRS score sheet worked by the engine, rules date pressed in coral",
+  "waived": [
+   "39b",
+   "77"
+  ],
+  "prompt": "PRPath Canada immigration assessment platform",
+  "scope": "page+app",
+  "date": "2026-11-17",
+  "mode": "build"
+ }
+]
