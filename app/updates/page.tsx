@@ -40,6 +40,11 @@ export default function UpdatesPage() {
               </tr>
             ))}
             <tr>
+              <td>Current to <span className="fig">2026-10-29</span></td>
+              <td>Immigration and Refugee Protection Act and Regulations: sections used in refusal analysis. <a href="https://laws-lois.justice.gc.ca/eng/acts/i-2.5/" target="_blank" rel="noopener noreferrer">Source</a></td>
+              <td className="fig">2026-11-17</td>
+            </tr>
+            <tr>
               <td>In effect</td>
               <td>Ontario: the Ontario Workforce Priority stream launched and all other OINP streams closed. <a href="https://www.ontario.ca/page/ontario-immigrant-nominee-program-oinp" target="_blank" rel="noopener noreferrer">Source</a></td>
               <td className="fig">2026-11-17</td>

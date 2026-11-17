@@ -4,9 +4,13 @@ export default function Privacy() {
   return (
     <div className="container app-main prose">
       <h1 style={{ fontSize: "var(--text-3xl)", marginBottom: "var(--space-sm)" }}>Privacy policy</h1>
-      <p className="muted">Version 2026-11-17. Written to follow the Personal Information Protection and Electronic Documents Act (PIPEDA) and its ten fair information principles.</p>
+      <p className="muted">Version 2026-11-17 (updated for documents and AI explanations). Written to follow the Personal Information Protection and Electronic Documents Act (PIPEDA) and its ten fair information principles.</p>
       <h2>What we collect</h2>
       <p>Your email, an optional first name, and the answers you give in the assessment: date of birth, nationality, family, immigration status and history, education, language test results, work history and location preferences. We also keep sign-in records (time and IP address) for security.</p>
+      <h2>Documents you upload</h2>
+      <p>Uploads are optional and need your consent each time. Each file is encrypted with its own key. We read the text of PDF files to suggest dates and details and to check them against your profile; we never change your documents. Deleting a document destroys its key, so the file can't be recovered.</p>
+      <h2>Optional AI explanations</h2>
+      <p>If this site has AI explanations turned on, you can choose, per refusal letter, to send the letter&apos;s text to Anthropic (the maker of the Claude AI model) for a plain-language explanation. Nothing is sent unless you tick that box. Scores, eligibility, deadlines and legal references are never produced by AI.</p>
       <h2>Why</h2>
       <p>Only to calculate your scores, show your deadlines, and keep your history. We do not sell your information, use it for advertising, or share it with immigration authorities.</p>
       <h2>Consent</h2>

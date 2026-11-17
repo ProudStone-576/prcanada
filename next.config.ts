@@ -16,6 +16,8 @@ const csp = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // pdf.js loads its worker module at runtime; bundling breaks that import.
+  serverExternalPackages: ["pdfjs-dist"],
   async headers() {
     return [
       {

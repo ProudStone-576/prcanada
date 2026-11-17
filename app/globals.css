@@ -6,6 +6,7 @@
 /* Hallmark · dismissed 40 · the pressed rules stamp is 20px semibold, large text, and clears 3:1 on the desk */
 /* Hallmark · waive 77 · the board holds a four-row ledger of the November 2026 CRS changes beside its head · the rows are the mass, a rule change is tabular */
 /* Hallmark · dismissed 58 · the 95 words at y 850 are six door cards, each a one-line link to a tool; cut to the shortest honest labels */
+/* Hallmark · dismissed 70 · the flagged text is a form label asking when a school confirmed program completion, not a success message; every save here posts to a server action */
 /* Hallmark · dismissed F4 · the card button is the theme's letterpress secondary, cotton stock not a fill; the ink board is the one primary */
 @import url("./tokens.css");
 @import url("./base.css");
@@ -217,9 +218,9 @@ textarea.input { min-height: 120px; line-height: 1.5; resize: vertical; }
 .calc { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: var(--space-2xl); align-items: start; }
 .calc__result { position: sticky; top: 88px; display: grid; gap: var(--space-lg); }
 @media (max-width: 60rem) { .calc { grid-template-columns: minmax(0, 1fr); } .calc__result { position: static; } }
-.calc form > fieldset + fieldset { margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule); }
-.calc form > fieldset > legend { float: left; width: 100%; font-weight: 600; font-size: var(--text-lg); letter-spacing: -0.01em; margin-bottom: var(--space-md); padding: 0; }
-.calc form > fieldset > legend + * { clear: both; }
+.calc-sections > fieldset + fieldset { margin-top: var(--space-xl); padding-top: var(--space-xl); border-top: var(--rule-hair) solid var(--color-rule); }
+.calc-sections > fieldset > legend { float: left; width: 100%; font-weight: 600; font-size: var(--text-lg); letter-spacing: -0.01em; margin-bottom: var(--space-md); padding: 0; }
+.calc-sections > fieldset > legend + * { clear: both; }
 .sect-row th { font-weight: 600 !important; color: var(--color-print) !important; padding-top: var(--space-md) !important; }
 .why { color: var(--color-muted); font-size: var(--text-xs); line-height: 1.45; margin-top: var(--space-3xs); max-width: 54ch; }
 .compare { width: 100%; overflow-x: auto; }
@@ -282,3 +283,12 @@ textarea.input { min-height: 120px; line-height: 1.5; resize: vertical; }
   .db td { border-bottom: 0; padding-block: var(--space-3xs); }
   .db td:first-child { grid-column: 1 / -1; min-width: 0; }
 }
+
+/* Documents */
+.kv { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-2xs) var(--space-md); }
+.kv > div { display: contents; }
+.kv dt { color: var(--color-muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+a.choice { text-decoration: none; }
+a.choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-input); }
+a.choice[aria-current="page"] span { background-color: var(--color-cotton); background-image: var(--tex-cotton); box-shadow: var(--edge-stock), var(--cast-stock); color: var(--color-print); }

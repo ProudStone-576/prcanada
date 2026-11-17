@@ -3,6 +3,7 @@ import { audit, currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { decryptJson } from "@/lib/crypto";
 import { loadProfile } from "@/lib/profile/store";
+import { listDocuments } from "@/lib/documents/store";
 
 /** PIPEDA access request: everything we hold about the signed-in user, decrypted, as JSON. */
 export async function GET() {
@@ -16,6 +17,8 @@ export async function GET() {
     db.deadline.findMany({ where: { userId: user.id } }),
     db.auditLog.findMany({ where: { userId: user.id }, select: { action: true, createdAt: true, ip: true } }),
   ]);
+  const docs = await listDocuments(user.id);
+  const refusals = await db.refusalAnalysis.findMany({ where: { userId: user.id } });
   await audit("data_export", user.id);
   const body = {
     exportedAt: new Date().toISOString(),
@@ -24,6 +27,8 @@ export async function GET() {
     assessments: assessments.map((a) => ({ id: a.id, createdAt: a.createdAt, ruleSetVersion: a.ruleSetVersion, total: a.total, input: decryptJson(a.inputSnapshot), result: a.result })),
     scenarios: scenarios.map((s) => ({ id: s.id, name: s.name, createdAt: s.createdAt, ruleSetVersion: s.ruleSetVersion, total: s.total, input: decryptJson(s.input) })),
     deadlines,
+    documents: docs.map((d) => ({ id: d.id, type: d.docType, uploaded: d.createdAt, size: d.size, filename: d.meta.filename, details: d.meta.suggested, confirmed: d.meta.confirmed, note: "Download each file from the Documents page." })),
+    refusalAnalyses: refusals.map((r) => ({ id: r.id, createdAt: r.createdAt, ...decryptJson<object>(r.cipher) })),
     activity: logs,
   };
   return new NextResponse(JSON.stringify(body, null, 2), {

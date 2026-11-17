@@ -74,7 +74,7 @@ export function CrsCalculator({ initial, rulesVersion, signedIn, scenarios, from
 
   return (
     <div className="calc">
-      <form onSubmit={(e) => e.preventDefault()} noValidate>
+      <form className="calc-sections" onSubmit={(e) => e.preventDefault()} noValidate>
         {fromProfile && <p className="notice" style={{ marginBottom: "var(--space-xl)" }}>Filled in from your assessment. Changes here don&apos;t change your saved answers.</p>}
         <fieldset>
           <legend>You</legend>

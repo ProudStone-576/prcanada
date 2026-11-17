@@ -11,6 +11,8 @@ import { Term } from "@/components/Term";
 import { AddDeadline } from "@/components/AddDeadline";
 import { dismissDeadlineAction } from "@/app/actions/deadlines";
 import { recommend } from "@/lib/engine/recommend";
+import { listDocuments } from "@/lib/documents/store";
+import { checkDocuments } from "@/lib/documents/checks";
 import { STATUS_LABEL } from "@/lib/data/programs";
 
 export const metadata = { title: "Dashboard" };
@@ -53,7 +55,9 @@ export default async function Dashboard() {
   const expiry = profile.permitExpiryDate ? daysUntil(profile.permitExpiryDate, now) : null;
 
   const report = completedSteps.length === 0 ? null : recommend(profile, now);
+  const docProblems = checkDocuments(await listDocuments(user.id), profile, now).filter((f) => f.level === "problem").length;
   const nextSteps: Array<{ text: string; href: string; external?: boolean }> = [];
+  if (docProblems) nextSteps.push({ text: `Fix ${docProblems} problem${docProblems === 1 ? "" : "s"} found in your documents.`, href: "/documents" });
   if (flags.length) nextSteps.push({ text: "Talk to a licensed consultant or lawyer about your situation before you apply for anything.", href: SRC.cicc, external: true });
   if (remainingSteps.length) nextSteps.push({ text: `Finish your assessment: ${remainingSteps.map((s) => s.label.toLowerCase()).join(", ")}.`, href: `/assessment?step=${remainingSteps[0].key}` });
   if (!profile.englishTest && !profile.frenchTest) nextSteps.push({ text: "Book an approved English or French test. Express Entry needs one, and scores drive about a third of your CRS.", href: SRC.languageTests, external: true });

@@ -24,6 +24,8 @@ model User {
   scenarios    Scenario[]
   deadlines    Deadline[]
   auditLogs    AuditLog[]
+  documents    Document[]
+  refusals     RefusalAnalysis[]
 }
 
 model Session {
@@ -137,6 +139,42 @@ model AuditLog {
   action    String
   ip        String?
   createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+/// An uploaded document. The file is encrypted with its own random key, which
+/// is itself encrypted with the app key; deleting the row destroys the key.
+model Document {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  docType    String
+  mime       String
+  size       Int
+  wrappedKey String
+  iv         String
+  tag        String
+  content    Bytes
+  /// Encrypted JSON: original filename, extracted text and fields, dates the user confirmed.
+  meta       String
+  consentAt  DateTime
+  createdAt  DateTime @default(now())
+
+  refusals RefusalAnalysis[]
+
+  @@index([userId, createdAt])
+}
+
+/// A refusal letter analysis. Input text and result are encrypted.
+model RefusalAnalysis {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documentId String?
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  cipher     String
+  createdAt  DateTime  @default(now())
 
   @@index([userId, createdAt])
 }
