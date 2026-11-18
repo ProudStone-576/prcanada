@@ -53,10 +53,11 @@ Both need `Authorization: Bearer $CRON_SECRET`. On Vercel, `vercel.json` already
 ### Docker (any Canadian host)
 ```bash
 docker build -t prpath .
-docker run --rm --env-file .env.production prpath npx prisma migrate deploy
+docker build --target migrate -t prpath-migrate .
+docker run --rm --env-file .env.production prpath-migrate          # migrations, then the verified-updates seed
 docker run -d --name prpath --env-file .env.production -p 3000:3000 prpath
 ```
-Put it behind a TLS-terminating reverse proxy that **appends** the client address to `X-Forwarded-For` (nginx: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`). Rate limits trust only the last entry, which your proxy adds.
+Docker's `--env-file` doesn't strip quotes, so write values without them (`KEY=value`). Put it behind a TLS-terminating reverse proxy that **appends** the client address to `X-Forwarded-For` (nginx: `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`). Rate limits trust only the last entry, which your proxy adds.
 
 ## 5. Before real users
 
