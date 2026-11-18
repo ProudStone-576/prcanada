@@ -11,6 +11,10 @@ export default function Privacy() {
       <p>Uploads are optional and need your consent each time. Each file is encrypted with its own key. We read the text of PDF files to suggest dates and details and to check them against your profile; we never change your documents. Deleting a document destroys its key, so the file can't be recovered.</p>
       <h2>Optional AI explanations</h2>
       <p>If this site has AI explanations turned on, you can choose, per refusal letter, to send the letter&apos;s text to Anthropic (the maker of the Claude AI model) for a plain-language explanation. Nothing is sent unless you tick that box. Scores, eligibility, deadlines and legal references are never produced by AI.</p>
+      <h2>Optional AI assistant</h2>
+      <p>If the assistant is turned on, you can ask it about your results after agreeing, each time you use it, to send your questions and a summary of your computed results (scores, pathways, deadlines) to Anthropic. Your documents and full answers are not sent, and the conversation is not saved to your account.</p>
+      <h2>Reminders</h2>
+      <p>Deadline reminders appear in your account. Email reminders are off unless you turn them on in your account settings, and they mention the deadline, not your scores or documents.</p>
       <h2>Why</h2>
       <p>Only to calculate your scores, show your deadlines, and keep your history. We do not sell your information, use it for advertising, or share it with immigration authorities.</p>
       <h2>Consent</h2>

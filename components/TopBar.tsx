@@ -2,19 +2,23 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth";
 import { logoutAction } from "@/app/actions/auth";
 import { NavLinks } from "./NavLinks";
+import { db } from "@/lib/db";
+import { isReviewer } from "@/lib/roles";
 
 export async function TopBar() {
   const user = await currentUser();
+  const unread = user ? await db.notification.count({ where: { userId: user.id, readAt: null } }) : 0;
   const links = user
     ? [
         { href: "/dashboard", label: "Dashboard" },
         { href: "/assessment", label: "Assessment" },
-        { href: "/crs", label: "CRS calculator" },
-        { href: "/pathways", label: "PR pathways" },
+        { href: "/crs", label: "CRS" },
+        { href: "/pathways", label: "Pathways" },
         { href: "/documents", label: "Documents" },
         { href: "/work-permits", label: "Permits" },
-        { href: "/history", label: "History" },
+        { href: "/notifications", label: unread ? `Alerts (${unread})` : "Alerts" },
         { href: "/account", label: "Account" },
+        ...(isReviewer(user.email) ? [{ href: "/review", label: "Review" }] : []),
       ]
     : [
         { href: "/crs", label: "CRS calculator" },

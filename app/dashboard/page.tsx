@@ -13,6 +13,7 @@ import { dismissDeadlineAction } from "@/app/actions/deadlines";
 import { recommend } from "@/lib/engine/recommend";
 import { listDocuments } from "@/lib/documents/store";
 import { checkDocuments } from "@/lib/documents/checks";
+import { aiEnabled } from "@/lib/ai/explain";
 import { STATUS_LABEL } from "@/lib/data/programs";
 
 export const metadata = { title: "Dashboard" };
@@ -150,6 +151,7 @@ export default async function Dashboard() {
                 )}
                 <div className="actions">
                   <Link href="/crs" className="btn btn--card btn--sm">See every point and try what-ifs</Link>
+                  <Link href="/history" className="small">Your recorded scores</Link>
                 </div>
                 <p className="small muted">A score doesn&apos;t mean you qualify. You must also meet one Express Entry program&apos;s requirements.</p>
               </>
@@ -249,6 +251,7 @@ export default async function Dashboard() {
             ) : (
               <p className="small muted">You&apos;re up to date.</p>
             )}
+                      {aiEnabled() && <p className="small" style={{ marginTop: "var(--space-sm)" }}><Link href="/assistant">Ask the assistant about your results</Link></p>}
           </section>
         </div>
       </div>

@@ -173,7 +173,7 @@ Principles:
 | 1 | Architecture, schema, auth, dashboard, dynamic questionnaire, CRS calculator with versioned rules, scenarios, history, legal pages | **built** |
 | 2 | Express Entry eligibility (CEC, FSW 67-point grid, FST), category-based selection checks, NOC 2021 database and duty matching, provincial stream database with statuses, recommendation ranking and action plan | **built** |
 | 3 | RCIP, FCIP, AIP and other community pathways; work permit and temporary status assessment (PGWP length, BOWP, SOWP, restoration windows); document upload, extraction and checklists; refusal analysis with professional-review flags | **built** |
-| 4 | Official source monitoring and review queue, update centre, email notifications, AI assistant for explanations | planned |
+| 4 | Official source monitoring and review queue, update centre, email notifications, AI assistant for explanations | **built** |
 | 5 | Penetration test, rule validation against IRCC's own tool, load testing, production deployment in a Canadian region | planned |
 
 ### Phase 2: what was built and how it was verified
@@ -192,6 +192,15 @@ Principles:
 - **Optional AI explanation** (`lib/ai/explain.ts`): Claude (`claude-opus-5-5`, server-side fallbacks on) explains the officer's concerns in plain language only when the operator sets `PRPATH_AI=on` and the person ticks a separate consent box. It is told not to give deadlines, legal references or recommendations; those always come from the rules.
 - **Temporary status** (`lib/engine/temporary.ts`): PGWP eligibility and length (language since November 1, 2024, field of study, 180-day window, one per lifetime), spousal open work permits (January 21, 2025 rules), bridging open work permits, and a status check for maintained status, restoration and permit expiry.
 
+### Phase 4: what was built
+
+- **Source monitor** (`lib/monitor/`, `POST /api/cron/monitor`): every official URL the rules and program records rely on (66 pages) is fetched, reduced to its main text, normalised so date stamps and boilerplate don't count, and hashed. A change opens a review item with the lines added and removed. Failures (blocked sites, timeouts, bot checks) are recorded per page and shown to reviewers. The job never changes rules or statuses.
+- **Review queue** (`/review`, reviewers listed in `REVIEWER_EMAILS`): dismiss a change with a note, or publish an update. An update can be marked in effect only once its effective date has passed; otherwise it is published as announced. Publishing never edits rule sets or program records; those change in code with tests.
+- **Update centre** (`/updates`): published updates in three groups (in effect, announced, ended), each with jurisdiction, dates, reviewer date and official source.
+- **Notifications** (`POST /api/cron/notify`, `/notifications`): reminders 90, 30, 7 and 1 days before permit, test, ECA, document and custom deadlines, keyed so they never repeat; email only for people who opt in; reviewed updates appear for everyone in the app.
+- **Assistant** (`/assistant`): Claude answers questions about the person's own results, given only computed facts (CRS breakdown, pathway verdicts and gaps, deadlines, plan). It may not compute numbers, promise outcomes, give legal advice or write anything for submission. Off unless `PRPATH_AI=on`; consent each session; nothing stored.
+- **Scheduling:** both jobs are Route Handlers that need `Authorization: Bearer $CRON_SECRET`, so any scheduler can call them (for example Vercel Cron or a server crontab, daily).
+
 ### Known gaps in program data (2026-11-17)
 
 - **Not verified:** Manitoba, Nova Scotia, Prince Edward Island and Yukon block automated reading or were unavailable. They are listed as "Not verified" with their official URL.
@@ -199,6 +208,12 @@ Principles:
 - **Quebec:** program names only; statuses not stated on the listing page.
 - **Status not stated:** many provincial stream pages give no intake status. They are labelled that way rather than assumed open.
 - Provincial streams are listed for people to check; their detailed eligibility is not assessed yet.
+
+### Known limitations in Phase 4
+
+- From this development container, canada.ca timed out and several provincial sites block automated reading, so the monitor was tested against a local page. In production it records each failing page for reviewers rather than guessing.
+- Email delivery still needs a provider in `lib/mail.ts`; until then reminders are logged.
+- The assistant was not run against the live API here (no credentials in this environment).
 
 ### Known limitations in Phase 3
 

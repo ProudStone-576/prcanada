@@ -292,3 +292,17 @@ textarea.input { min-height: 120px; line-height: 1.5; resize: vertical; }
 a.choice { text-decoration: none; }
 a.choice:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-input); }
 a.choice[aria-current="page"] span { background-color: var(--color-cotton); background-image: var(--tex-cotton); box-shadow: var(--edge-stock), var(--cast-stock); color: var(--color-print); }
+
+/* Review diff */
+.diff { display: grid; gap: var(--space-3xs); max-height: 360px; overflow: auto; padding: var(--space-sm); border-radius: var(--radius-input); background: var(--color-paper-2); font-size: var(--text-sm); }
+.diff p { margin: 0; padding: var(--space-3xs) var(--space-xs); border-radius: 4px; overflow-wrap: anywhere; }
+.diff__del { background: color-mix(in oklab, var(--color-error) 9%, var(--color-paper)); color: var(--color-ink); text-decoration: line-through; text-decoration-color: color-mix(in oklab, var(--color-error) 60%, transparent); }
+.diff__add { background: color-mix(in oklab, var(--color-success) 10%, var(--color-paper)); color: var(--color-ink); }
+
+/* Assistant */
+.chat { display: grid; gap: var(--space-lg); max-width: 820px; }
+.chat__log { display: grid; gap: var(--space-md); }
+.chat__q { justify-self: end; max-width: 80%; padding: var(--space-sm) var(--space-md); border-radius: var(--radius-card); background: var(--color-paper-3); display: grid; gap: var(--space-2xs); }
+.chat__a { max-width: 92%; padding: var(--space-md) var(--space-lg); display: grid; gap: var(--space-xs); }
+.dash__col { min-width: 0; }
+.list .row { flex-wrap: wrap; }

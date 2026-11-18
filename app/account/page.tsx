@@ -1,11 +1,14 @@
 import { requireUser } from "@/lib/auth";
 import { AuthForm } from "@/components/AuthForm";
 import { changePasswordAction, deleteAccountAction } from "@/app/actions/auth";
+import { EmailRemindersToggle } from "@/components/EmailRemindersToggle";
+import { db } from "@/lib/db";
 
 export const metadata = { title: "Account" };
 
 export default async function AccountPage() {
   const user = await requireUser();
+  const me = await db.user.findUniqueOrThrow({ where: { id: user.id }, select: { emailReminders: true } });
   return (
     <div className="container app-main">
       <header className="page-head">
@@ -27,6 +30,10 @@ export default async function AccountPage() {
           </section>
         </div>
         <div className="dash__col">
+          <section className="stock panel">
+            <h2>Reminders</h2>
+            <EmailRemindersToggle initial={me.emailReminders} />
+          </section>
           <section className="stock panel">
             <h2>Your data</h2>
             <p className="small" style={{ marginBottom: "var(--space-md)" }}>Download everything we hold about you: your answers, recorded scores, scenarios, reminders and sign-in activity.</p>

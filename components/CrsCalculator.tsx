@@ -240,6 +240,7 @@ export function CrsCalculator({ initial, rulesVersion, signedIn, scenarios, from
                 <button type="button" className="btn btn--ink" disabled={pending || !scored.result} aria-busy={pending} onClick={() => start(() => saveAssessmentAction(s))}>
                   Record in my history
                 </button>
+                <Link href="/history" className="small">View history</Link>
               </div>
               <p className="small muted" aria-live="polite">{msg}</p>
             </div>
