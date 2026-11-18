@@ -4,6 +4,7 @@ import { z } from "zod";
 import { audit, requireUser } from "@/lib/auth";
 import { askAssistant, type AssistantReply } from "@/lib/ai/assistant";
 import { loadProfile } from "@/lib/profile/store";
+import { allow, HOUR } from "@/lib/ratelimit";
 
 const turns = z
   .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().trim().min(1).max(4000) }))
@@ -16,6 +17,7 @@ export async function askAssistantAction(history: unknown, consent: boolean): Pr
   if (!consent) return { ok: false, reason: "Please confirm you agree to send your question and results summary to the AI service." };
   const parsed = turns.safeParse(history);
   if (!parsed.success) return { ok: false, reason: "Ask a shorter question (up to 4,000 characters), or start a new conversation." };
+  if (!(await allow(`assistant:user:${user.id}`, 30, HOUR))) return { ok: false, reason: "You've asked a lot of questions this hour. Try again later." };
   const { profile } = await loadProfile(user.id);
   await audit("assistant_question", user.id);
   return askAssistant(profile, parsed.data);

@@ -297,7 +297,7 @@ export function calculateCrs(input: CrsInput, rules: CrsRuleSet): CrsResult {
     max: a.canadianEducationLong,
     explanation:
       ce === "three_year_or_more"
-        ? "A Canadian credential of three or more years (or a master's, professional or doctoral degree)."
+        ? "A Canadian post-secondary credential of three years or longer."
         : ce === "one_or_two_year"
           ? "A one- or two-year Canadian post-secondary credential."
           : "No Canadian post-secondary credential.",

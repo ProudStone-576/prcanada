@@ -2,11 +2,14 @@
 
 Your Canadian Immigration Journey, Simplified.
 
-A Canadian immigration decision-support platform for international students, graduates and temporary residents. **Phases 1 to 4** are built: accounts, a dynamic assessment, a dashboard, a CRS calculator worked from IRCC's official tables (including the November 3, 2026 changes), Express Entry eligibility checks (CEC, FSW, FST and current categories), a NOC finder that compares your duties with the official NOC 2021 descriptions, a database of provincial and community programs with their official statuses, ranked pathway recommendations with an action plan, encrypted document storage with checks and checklists, refusal letter analysis with deadlines, work permit assessments (PGWP, spousal, bridging), official-page monitoring with a human review queue, an update centre, deadline reminders (in-app, opt-in email), and an optional grounded AI assistant.
+A Canadian immigration decision-support platform for international students, graduates and temporary residents. **All five phases** are built: accounts, a dynamic assessment, a dashboard, a CRS calculator worked from IRCC's official tables (including the November 3, 2026 changes), Express Entry eligibility checks (CEC, FSW, FST and current categories), a NOC finder that compares your duties with the official NOC 2021 descriptions, a database of provincial and community programs with their official statuses, ranked pathway recommendations with an action plan, encrypted document storage with checks and checklists, refusal letter analysis with deadlines, work permit assessments (PGWP, spousal, bridging), official-page monitoring with a human review queue, an update centre, deadline reminders (in-app, opt-in email), and an optional grounded AI assistant.
 
 PRPath Canada gives information, not legal advice. It is not a licensed consultant or lawyer and never submits applications.
 
 - Architecture, schema, security and roadmap: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- Rule validation record: [`docs/VALIDATION.md`](docs/VALIDATION.md)
+- Deploying: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
+- Browser and security test suites: [`e2e/README.md`](e2e/README.md)
 - Rule engine: [`lib/engine`](lib/engine) (pure TypeScript, no LLM, tested in [`tests`](tests))
 
 ## Run it
@@ -18,7 +21,7 @@ cp .env.example .env          # set DATABASE_URL and APP_ENCRYPTION_KEY
 npm install
 npx prisma migrate deploy
 npm run dev                   # http://localhost:3000
-npm test                      # engine and profile tests
+npm test                      # unit tests, plus database integration tests when DATABASE_URL is set
 ```
 
 Schedule `POST /api/cron/monitor` and `POST /api/cron/notify` daily with `Authorization: Bearer $CRON_SECRET`, and list reviewers in `REVIEWER_EMAILS` (see `.env.example`).

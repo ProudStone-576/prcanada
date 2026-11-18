@@ -125,13 +125,15 @@ function educationForCrs(p: Profile, missing: Missing[], notes: string[]): Educa
 
 function canadianEducation(p: Profile, notes: string[]): CanadianEducation {
   if (!p.canadianCredentialType || !p.canadianProgramLengthMonths) return "none";
-  if (p.canadianStudyFullTime !== "yes" || p.canadianStudyInPerson !== "yes") {
-    notes.push("Canadian study only earns additional points if it was full-time, in person, in Canada for at least 8 months. Confirm both answers on the education step for it to count.");
-    return "none";
+  // IRCC's CRS criteria table scores Canadian credentials by length only: 1-2 years = 15, 3 years or longer = 30.
+  const level: CanadianEducation = p.canadianProgramLengthMonths >= 36 ? "three_year_or_more" : p.canadianProgramLengthMonths >= 8 ? "one_or_two_year" : "none";
+  if (level !== "none") {
+    notes.push("Canadian education points follow IRCC's table by credential length. IRCC may apply conditions the public criteria page doesn't list (for example about full-time or in-Canada study); confirm in IRCC's own CRS tool.");
+    if ((p.canadianCredentialType === "masters" || p.canadianCredentialType === "doctoral") && level === "one_or_two_year") {
+      notes.push("Your master's or doctoral program is shorter than 3 years, so we gave 15 points. IRCC's criteria page lists 30 only for credentials of 3 years or longer; IRCC's CRS tool will show how it treats your degree.");
+    }
   }
-  const long =
-    p.canadianCredentialType === "masters" || p.canadianCredentialType === "doctoral" || p.canadianProgramLengthMonths >= 36;
-  return long ? "three_year_or_more" : p.canadianProgramLengthMonths >= 8 ? "one_or_two_year" : "none";
+  return level;
 }
 
 export function deriveCrs(p: Profile, on: Date): DerivedCrs {

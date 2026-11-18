@@ -29,7 +29,7 @@ export default function Privacy() {
       <h2>Access and deletion</h2>
       <p>From your account page you can download everything we hold about you, or delete your account. Deletion removes your answers, scores, scenarios, reminders and sessions immediately. A minimal security log entry that an account was deleted is kept, without your email.</p>
       <h2>Retention</h2>
-      <p>We keep your information while your account is open. Accounts unused for 24 months will be flagged for deletion after notice.</p>
+      <p>We keep your information while your account is open. If you don&apos;t sign in for 24 months, we email you a notice, and 30 days later we delete your account and everything in it unless you sign in. You can also delete it yourself at any time.</p>
       <h2>Questions and complaints</h2>
       <p>Contact the operator of this service. If you are not satisfied, you can complain to the Office of the Privacy Commissioner of Canada.</p>
     </div>

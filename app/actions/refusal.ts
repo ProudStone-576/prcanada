@@ -8,6 +8,8 @@ import { encryptJson } from "@/lib/crypto";
 import { analyzeRefusal, type RefusalResult } from "@/lib/engine/refusal";
 import { explainRefusal, type AiExplanation } from "@/lib/ai/explain";
 import { getDocumentMeta } from "@/lib/documents/store";
+import { allow, HOUR, MINUTE } from "@/lib/ratelimit";
+import { clientInfo } from "@/lib/auth";
 
 const input = z.object({
   text: z.string().max(50_000).optional(),
@@ -30,6 +32,8 @@ export async function analyzeRefusalAction(raw: z.infer<typeof input>): Promise<
   if (!parsed.success) return { error: "Check the form and try again.", result: null, ai: null, savedId: null };
   const v = parsed.data;
   const user = await currentUser();
+  const { ip } = await clientInfo();
+  if (!(await allow(`refusal:ip:${ip}`, 30, 10 * MINUTE))) return { error: "Too many analyses in a short time. Try again in a few minutes.", result: null, ai: null, savedId: null };
 
   let text = v.text ?? "";
   let documentId: string | null = null;
@@ -44,7 +48,7 @@ export async function analyzeRefusalAction(raw: z.infer<typeof input>): Promise<
   if (text.trim().length < 40) return { error: "Paste the full letter, including the part with the officer's reasons.", result: null, ai: null, savedId: null };
 
   const result = analyzeRefusal({ text, notifiedOn: v.notifiedOn || undefined, where: v.where }, new Date());
-  const ai = v.ai && user ? await explainRefusal(text, result) : null;
+  const ai = v.ai && user ? ((await allow(`refusal-ai:user:${user.id}`, 10, HOUR)) ? await explainRefusal(text, result) : { ok: false as const, reason: "You've reached the hourly limit for AI explanations. The analysis above is unaffected." }) : null;
 
   let savedId: string | null = null;
   if (user && v.save) {

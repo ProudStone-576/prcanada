@@ -1,5 +1,6 @@
 import "server-only";
 import { notFound } from "next/navigation";
+import { timingSafeEqual } from "node:crypto";
 import { requireUser } from "./auth";
 
 /** Reviewers are listed by email in REVIEWER_EMAILS (comma-separated). Nobody is a reviewer by default. */
@@ -18,5 +19,7 @@ export async function requireReviewer() {
 export function cronAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret || secret.length < 24) return false;
-  return request.headers.get("authorization") === `Bearer ${secret}`;
+  const got = Buffer.from(request.headers.get("authorization") ?? "");
+  const want = Buffer.from(`Bearer ${secret}`);
+  return got.length === want.length && timingSafeEqual(got, want);
 }

@@ -6,6 +6,18 @@ import { db } from "@/lib/db";
 import { hashPassword, newToken, sha256, verifyPassword } from "@/lib/crypto";
 import { audit, clientInfo, CONSENT_VERSION, createSession, destroySession, loginThrottled, requireUser } from "@/lib/auth";
 import { sendMail } from "@/lib/mail";
+import { allow, HOUR } from "@/lib/ratelimit";
+
+/** Only same-site paths: rejects "//host", "/\\host" and anything that resolves to another origin. */
+function safeNext(next: string): string {
+  if (!next.startsWith("/") || next.startsWith("//") || next.includes("\\")) return "/dashboard";
+  try {
+    const u = new URL(next, "http://local.invalid");
+    return u.origin === "http://local.invalid" ? u.pathname + u.search : "/dashboard";
+  } catch {
+    return "/dashboard";
+  }
+}
 
 export interface FormState {
   error?: string;
@@ -32,6 +44,8 @@ export async function signupAction(_: FormState, form: FormData): Promise<FormSt
   if (!parsed.success) return { error: parsed.error.issues[0].message, fields };
   const { name, email: addr, password: pw } = parsed.data;
 
+  const { ip } = await clientInfo();
+  if (!(await allow(`signup:ip:${ip}`, 10, HOUR))) return { error: "Too many accounts created from this network. Try again later.", fields };
   const existing = await db.user.findUnique({ where: { email: addr } });
   if (existing) return { error: "An account with this email already exists. Sign in, or reset your password.", fields };
 
@@ -60,8 +74,7 @@ export async function loginAction(_: FormState, form: FormData): Promise<FormSta
 
   await audit("login", user.id);
   await createSession(user.id);
-  const next = String(form.get("next") ?? "");
-  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard");
+  redirect(safeNext(String(form.get("next") ?? "")));
 }
 
 export async function logoutAction() {
@@ -72,6 +85,10 @@ export async function logoutAction() {
 export async function requestResetAction(_: FormState, form: FormData): Promise<FormState> {
   const parsed = email.safeParse(form.get("email"));
   if (!parsed.success) return { error: "Enter a valid email address" };
+  const { ip } = await clientInfo();
+  const sent = { ok: "If an account uses that email, we've sent a reset link. It works for 30 minutes." };
+  // Same answer either way, so limits never reveal whether an account exists.
+  if (!(await allow(`reset:ip:${ip}`, 10, HOUR)) || !(await allow(`reset:email:${parsed.data}`, 3, HOUR))) return sent;
   const user = await db.user.findUnique({ where: { email: parsed.data } });
   if (user) {
     const { token, hash } = newToken();

@@ -64,3 +64,13 @@ describe("profile to CRS input", () => {
     expect(d.input?.accompanyingSpouse).toBe(false);
   });
 });
+
+describe("Canadian education points follow IRCC's table by length", () => {
+  const base = { dateOfBirth: "1997-01-01", educationLevel: "masters_or_professional" as const, educationEarnedIn: "canada" as const };
+  it("gives the 3-year row only to credentials of 3 years or longer", () => {
+    expect(deriveCrs({ ...base, canadianCredentialType: "bachelors", canadianProgramLengthMonths: 48 }, on).input?.canadianEducation).toBe("three_year_or_more");
+    const short = deriveCrs({ ...base, canadianCredentialType: "masters", canadianProgramLengthMonths: 16 }, on);
+    expect(short.input?.canadianEducation).toBe("one_or_two_year");
+    expect(short.notes.join(" ")).toMatch(/shorter than 3 years/);
+  });
+});

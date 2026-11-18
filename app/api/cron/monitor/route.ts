@@ -14,3 +14,9 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Body must be empty or { only: [urls] }" }, { status: 400 });
   return NextResponse.json(await runMonitor({ only: parsed.data?.only }));
 }
+
+/** Vercel Cron calls with GET (no body) and the same bearer secret: checks every watched page. */
+export async function GET(request: Request) {
+  if (!cronAuthorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  return NextResponse.json(await runMonitor());
+}

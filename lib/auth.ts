@@ -11,7 +11,10 @@ export const CONSENT_VERSION = "2026-11-17";
 
 export async function clientInfo() {
   const h = await headers();
-  const ip = (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || "unknown";
+  // The last X-Forwarded-For entry is the one our own proxy added (nginx appends; Vercel sets one value).
+  // Earlier entries come from the client and can be forged, so they're never used for limits.
+  const hops = (h.get("x-forwarded-for") ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+  const ip = hops[hops.length - 1] || h.get("x-real-ip") || "unknown";
   return { ip, userAgent: h.get("user-agent")?.slice(0, 300) ?? null };
 }
 
@@ -20,6 +23,8 @@ export async function createSession(userId: string) {
   const { ip, userAgent } = await clientInfo();
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 86400_000);
   await db.session.create({ data: { tokenHash: hash, userId, expiresAt, ip, userAgent } });
+  // Signing in counts as activity and cancels any pending retention notice.
+  await db.user.update({ where: { id: userId }, data: { lastSeenAt: new Date(), retentionNoticeAt: null } });
   (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",

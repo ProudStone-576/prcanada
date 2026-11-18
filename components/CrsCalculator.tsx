@@ -120,9 +120,9 @@ export function CrsCalculator({ initial, rulesVersion, signedIn, scenarios, from
               label="Post-secondary education completed in Canada"
               value={s.canadianEducation}
               onChange={(v) => set("canadianEducation", v ?? "none")}
-              options={[["one_or_two_year", "One- or two-year credential"], ["three_year_or_more", "Three years or more, or a master's, professional or doctoral degree"]]}
+              options={[["one_or_two_year", "One- or two-year credential"], ["three_year_or_more", "Three years or longer"]]}
               placeholder="None"
-              hint="Full-time, in person, in Canada for at least 8 months."
+              hint="Scored by the credential's length, as IRCC's table does. IRCC may apply other conditions; check its CRS tool."
             />
             <Check checked={s.siblingInCanada} onChange={(v) => set("siblingInCanada", v)}>A brother or sister in Canada, 18 or older, who is a citizen or PR</Check>
             <Check checked={s.provincialNomination} onChange={(v) => set("provincialNomination", v)}>I have a <Term k="pnp">provincial nomination</Term></Check>

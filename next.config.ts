@@ -1,29 +1,24 @@
 import type { NextConfig } from "next";
 
-const csp = [
-  "default-src 'self'",
-  // Next.js injects inline bootstrap scripts; move to nonces when a CSP nonce proxy is added.
-  "script-src 'self' 'unsafe-inline'" + (process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""),
-  "style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com",
-  "font-src 'self' https://cdn.fontshare.com https://fonts.gstatic.com",
-  "img-src 'self' data:",
-  "connect-src 'self'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-].join("; ");
+// Pages get a per-request nonce CSP from proxy.ts. API responses (JSON and file downloads) get this one.
+const apiCsp = "default-src 'none'; frame-ancestors 'none'; sandbox";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // A self-contained server in .next/standalone for Docker or any Node host.
+  output: "standalone",
   // pdf.js loads its worker module at runtime; bundling breaks that import.
   serverExternalPackages: ["pdfjs-dist"],
+  // pdf.js imports its worker at runtime, which file tracing can't see; ship it with the upload route.
+  outputFileTracingIncludes: {
+    "/api/documents": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+  },
   async headers() {
     return [
+      { source: "/api/:path*", headers: [{ key: "Content-Security-Policy", value: apiCsp }] },
       {
         source: "/:path*",
         headers: [
-          { key: "Content-Security-Policy", value: csp },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

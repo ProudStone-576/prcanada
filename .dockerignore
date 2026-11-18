@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+e2e/.shots
+e2e/fixtures/*.pdf
+.hallmark
+*.log

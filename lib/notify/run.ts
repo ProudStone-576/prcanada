@@ -4,6 +4,8 @@ import { listDocuments } from "../documents/store";
 import { sendMail } from "../mail";
 import { loadProfile } from "../profile/store";
 import { buildNotices } from "./build";
+import { pruneRateEvents } from "../ratelimit";
+import { runRetention } from "../retention";
 
 /** Create due reminders for every user; email them to people who opted in. */
 export async function runNotifications(on = new Date()) {
@@ -32,5 +34,7 @@ export async function runNotifications(on = new Date()) {
       }
     }
   }
-  return { users: users.length, created, emailed };
+  await pruneRateEvents();
+  const retention = await runRetention(on);
+  return { users: users.length, created, emailed, retention };
 }

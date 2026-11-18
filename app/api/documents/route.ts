@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { extractFields } from "@/lib/documents/extract";
 import { pdfText } from "@/lib/documents/pdf-text";
 import { saveDocument } from "@/lib/documents/store";
+import { allow, HOUR } from "@/lib/ratelimit";
 import { DOC_TYPE_KEYS, MAX_BYTES, MAX_DOCS, sniffMime, type DocMeta, type DocType } from "@/lib/documents/types";
 
 export async function POST(request: Request) {
@@ -12,10 +13,13 @@ export async function POST(request: Request) {
 
   // Same-origin only: browsers send Origin on POST; reject cross-site form posts.
   const origin = request.headers.get("origin");
-  if (origin && new URL(origin).host !== new URL(request.url).host) return NextResponse.json({ error: "Cross-site upload refused." }, { status: 403 });
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (origin && (!host || new URL(origin).host !== host)) return NextResponse.json({ error: "Cross-site upload refused." }, { status: 403 });
 
   const declared = Number(request.headers.get("content-length") ?? 0);
   if (declared > MAX_BYTES + 64 * 1024) return NextResponse.json({ error: "Files must be 10 MB or smaller." }, { status: 413 });
+
+  if (!(await allow(`upload:user:${user.id}`, 30, HOUR))) return NextResponse.json({ error: "Too many uploads in the last hour. Try again later." }, { status: 429 });
 
   const form = await request.formData();
   if (form.get("consent") !== "on") return NextResponse.json({ error: "Please confirm you agree to us storing and reading this document." }, { status: 400 });
@@ -40,7 +44,7 @@ export async function POST(request: Request) {
       textStatus = text ? "extracted" : "no_text";
     } catch (e) {
       // Log the failure type only, never document content.
-      console.error("[documents] PDF text extraction failed:", (e as Error).name);
+      console.error("[documents] PDF text extraction failed:", (e as Error).name, String((e as Error).message).slice(0, 200));
       textStatus = "failed";
     }
   }

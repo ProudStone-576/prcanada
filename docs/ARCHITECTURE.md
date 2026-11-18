@@ -174,7 +174,7 @@ Principles:
 | 2 | Express Entry eligibility (CEC, FSW 67-point grid, FST), category-based selection checks, NOC 2021 database and duty matching, provincial stream database with statuses, recommendation ranking and action plan | **built** |
 | 3 | RCIP, FCIP, AIP and other community pathways; work permit and temporary status assessment (PGWP length, BOWP, SOWP, restoration windows); document upload, extraction and checklists; refusal analysis with professional-review flags | **built** |
 | 4 | Official source monitoring and review queue, update centre, email notifications, AI assistant for explanations | **built** |
-| 5 | Penetration test, rule validation against IRCC's own tool, load testing, production deployment in a Canadian region | planned |
+| 5 | Security testing and hardening, rule validation, performance testing, deployment readiness | **built** (deployment itself needs the operator's accounts; see `docs/DEPLOYMENT.md`) |
 
 ### Phase 2: what was built and how it was verified
 
@@ -191,6 +191,24 @@ Principles:
 - **Refusal analysis** (`lib/engine/refusal.ts`): application type, grounds matched to IRPA and IRPR provisions verified on the Justice Laws site (current to 2026-10-29), judicial review deadlines (IRPA s. 72(2)(b): 15 days in Canada, 60 outside), restoration windows (IRPR s. 182), procedural fairness responses, and flags for misrepresentation, criminality, security, human rights, health, non-compliance and loss of status that require professional review. Options are listed, labelled as legal challenge or administrative step, and never ranked as advice.
 - **Optional AI explanation** (`lib/ai/explain.ts`): Claude (`claude-opus-5-5`, server-side fallbacks on) explains the officer's concerns in plain language only when the operator sets `PRPATH_AI=on` and the person ticks a separate consent box. It is told not to give deadlines, legal references or recommendations; those always come from the rules.
 - **Temporary status** (`lib/engine/temporary.ts`): PGWP eligibility and length (language since November 1, 2024, field of study, 180-day window, one per lifetime), spousal open work permits (January 21, 2025 rules), bridging open work permits, and a status check for maintained status, restoration and permit expiry.
+
+### Phase 5: security, validation, performance, deployment
+
+**Security audit (2026-11-18).** Every server action and route was reviewed: each requires the right identity (signed-in user, reviewer, or job secret) and every query is limited to the caller's own rows. Fixes made:
+- Rate limits stored in the database (`lib/ratelimit.ts`): sign-ups 10 per hour per network; password-reset emails 3 per hour per address and 10 per network, with the same reply either way so limits can't reveal accounts; uploads 30 per hour; public NOC and refusal tools 60 and 30 per 10 minutes; AI 30 assistant questions and 10 explanations per hour per person. Login throttling was already in place.
+- Client addresses for limits come from the last `X-Forwarded-For` entry (added by our own proxy), so forged headers can't dodge them.
+- Login `next=` redirects accept only same-site paths (blocks `//host`, `/\host` and absolute URLs).
+- Content Security Policy with a fresh nonce per request (`proxy.ts`): no inline or injected scripts; API responses get `default-src 'none'; sandbox`.
+- Constant-time comparison of the job secret; upload origin check against the public host.
+- Dependencies: `npm audit --omit=dev` reports 0 vulnerabilities. A Prisma CLI dependency was overridden to a patched version; a test-runner dependency (`picomatch`) has no fixed release yet and doesn't ship to production.
+- The 24-month retention rule in the privacy policy is now enforced by the daily job.
+- `e2e/05-security.cjs` checks 32 of these properties against a running server; all pass.
+
+**Rule validation.** See `docs/VALIDATION.md`: every table re-checked row by row against the official pages on 2026-11-18, all matching. One unsupported rule (30 points for any Canadian master's or doctorate, and study conditions) was removed.
+
+**Performance.** Engines run in well under a millisecond per call (CRS 0.01 ms, profile derivation 0.08 ms, all-program recommendations 0.33 ms, NOC matching over 516 occupations 0.73 ms). One Node process served 170 to 240 requests per second with 20 concurrent users, median 80 to 115 ms and 99th percentile under 170 ms, for both public and signed-in pages. The monitor checks four pages at a time and stops within 200 s, resuming with the least recently checked pages next run, so it never exceeds its 300 s limit.
+
+**Deployment.** Standalone server output, a non-root Docker image with a health check, `GET /api/health`, Vercel Cron schedules in `vercel.json`, and `docs/DEPLOYMENT.md` (Canadian hosting, secrets, first run, pre-launch checklist). The standalone server was run on its own and passed the core, documents and security suites. Doing so caught a silent failure: file tracing didn't copy pdf.js's runtime worker, so document reading would have failed in any standalone or Docker deployment. It's now included explicitly with `outputFileTracingIncludes`.
 
 ### Phase 4: what was built
 
