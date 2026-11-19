@@ -1,7 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
-    { "path": "/api/cron/monitor", "schedule": "43 9 * * *" },
-    { "path": "/api/cron/notify", "schedule": "17 13 * * *" }
-  ]
+    {
+      "path": "/api/cron/monitor",
+      "schedule": "43 9 * * *"
+    },
+    {
+      "path": "/api/cron/notify",
+      "schedule": "17 13 * * *"
+    }
+  ],
+  "buildCommand": "prisma migrate deploy && node prisma/seed-updates.mjs && next build"
 }

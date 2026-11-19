@@ -47,7 +47,7 @@ Both need `Authorization: Bearer $CRON_SECRET`. On Vercel, `vercel.json` already
 ### Vercel
 1. Create a Postgres database in a Canadian region with your provider of choice and set `DATABASE_URL`.
 2. Import the repository, set the environment variables above, and deploy. `vercel.json` adds the two daily jobs.
-3. Run `npx prisma migrate deploy` against the production database from your machine or CI, then the seed.
+3. `vercel.json` runs `prisma migrate deploy` and the verified-updates seed as part of every build, so the production `DATABASE_URL` must be set for builds (production environment only; preview builds would fail without it).
 4. Choose a Canadian function region in the project settings if your plan offers one.
 
 ### Docker (any Canadian host)
